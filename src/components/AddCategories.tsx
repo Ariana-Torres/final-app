@@ -84,7 +84,6 @@ const AddCategories: React.FC = () => {
   };
 
   const handleEditClick = (categoryId: string) => {
-    // Implementa la lógica para editar una categoría
     console.log(`Edit category with ID: ${categoryId}`);
   };
 
@@ -121,7 +120,6 @@ const AddCategories: React.FC = () => {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Slug</th>
             <th>Acciones</th>
@@ -130,7 +128,6 @@ const AddCategories: React.FC = () => {
         <tbody>
           {categories.map((category) => (
             <tr key={category.id}>
-              <td>{category.id}</td>
               <td>{category.name}</td>
               <td>{category.slug}</td>
               <td>

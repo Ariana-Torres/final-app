@@ -93,7 +93,6 @@ const AddClients: React.FC = () => {
   };
 
   const handleEditClick = (clientId: string) => {
-    // Implementa la lógica para editar un cliente
     console.log(`Edit client with ID: ${clientId}`);
   };
 

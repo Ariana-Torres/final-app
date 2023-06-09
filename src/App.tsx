@@ -6,12 +6,12 @@ import AddType from "./components/AddType";
 import AddCliente from "./components/AddClients";
 import AddMenu from "./components/AddMenu";
 
-import "./App.css"
+import "./App.css";
 
 export default function App() {
   return (
     <Router>
-      <h1>Bienvenidos</h1>
+      <h1>🍳 Bienvenidos a Nuestro sabor 🍳</h1>
       <nav>
         <ul>
           <li>

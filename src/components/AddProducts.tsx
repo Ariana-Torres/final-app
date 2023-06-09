@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+
 import "./css/Products.css";
+import * as uuid from "uuid";
 
 interface Product {
   id: string;
@@ -8,6 +10,14 @@ interface Product {
   price: number;
   categories: string[];
   types: string[];
+}
+interface Category {
+  id: string;
+  name: string;
+}
+interface Type {
+  id: string;
+  name: string;
 }
 
 const AddProducts: React.FC = () => {
@@ -20,9 +30,8 @@ const AddProducts: React.FC = () => {
     categories: [],
     types: [],
   });
-
-  const categoriesOptions = ["Category 1", "Category 2", "Category 3"];
-  const typesOptions = ["Type 1", "Type 2", "Type 3"];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [types, setTypes] = useState<Type[]>([]);
 
   useEffect(() => {
     // Cargar los productos al cargar el componente
@@ -34,21 +43,47 @@ const AddProducts: React.FC = () => {
       const response = await fetch("http://localhost:3000/products");
       const data = await response.json();
       setProducts(data);
+
+      // Agregar aquí las solicitudes para obtener las categorías y tipos desde la base de datos
+      const categoriesResponse = await fetch(
+        "http://localhost:3000/categories"
+      );
+      const categoriesData = await categoriesResponse.json();
+      // Actualizar el estado de las categorías con los datos recibidos
+      setCategories(categoriesData);
+
+      const typesResponse = await fetch("http://localhost:3000/types");
+      const typesData = await typesResponse.json();
+      // Actualizar el estado de los tipos con los datos recibidos
+      setTypes(typesData);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
-
   const addProduct = async () => {
     try {
+      const newProductId = uuid.v4();
+      const newProductWithId = { ...newProduct, id: newProductId };
+      // Enviar las categorías y tipos seleccionados en el cuerpo de la solicitud
+      const newProductData = {
+        ...newProductWithId,
+        categories: newProduct.categories.map((categoryId) => ({
+          id: categoryId,
+        })),
+        types: newProduct.types.map((typeId) => ({
+          id: typeId,
+        })),
+      };
+
       await fetch("http://localhost:3000/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newProduct),
+        body: JSON.stringify(newProductData),
       });
-      fetchProducts(); // Actualizar la lista de productos después de agregar uno nuevo
+
+      fetchProducts();
       resetForm();
     } catch (error) {
       console.error("Error adding product:", error);
@@ -102,7 +137,7 @@ const AddProducts: React.FC = () => {
 
   return (
     <div>
-      <h1>Agregar Menú</h1>
+      <h1>Agregar Productos</h1>
       <div>
         <div>
           <label htmlFor="productName">Nombre:</label>
@@ -149,14 +184,14 @@ const AddProducts: React.FC = () => {
               )
             }
           >
-            {categoriesOptions.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
         </div>
-        <div>
+        {/* <div>
           <label htmlFor="productTypes">Tipos:</label>
           <select
             id="productTypes"
@@ -168,16 +203,18 @@ const AddProducts: React.FC = () => {
               )
             }
           >
-            {typesOptions.map((type) => (
-              <option key={type} value={type}>
-                {type}
+            {types.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name}
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
+
         <div>
           <button onClick={addProduct}>Agregar Producto</button>
         </div>
+        <h1>Productos</h1>
         <table>
           <thead>
             <tr>
