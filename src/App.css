@@ -1,0 +1,32 @@
+/* App.css */
+
+h1 {
+  color: blue;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+nav {
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+a:hover {
+  color: blue;
+}
