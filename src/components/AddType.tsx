@@ -1,5 +1,3 @@
-// AddType.tsx
-
 import React, { useState, useEffect } from "react";
 
 const AddType: React.FC = () => {
@@ -9,15 +7,17 @@ const AddType: React.FC = () => {
     slug: string;
   }
 
-  const [type, setType] = useState<Type[]>([]);
-  const [newTypes, setNewTypes] = useState<Type>({
+  const [types, setTypes] = useState<Type[]>([]);
+  const [newType, setNewType] = useState<Type>({
     id: "",
     name: "",
     slug: "",
   });
 
+  const [editMode, setEditMode] = useState(false);
+  const [editTypeId, setEditTypeId] = useState("");
+
   useEffect(() => {
-    // Cargar las categorías al cargar el componente
     fetchTypes();
   }, []);
 
@@ -25,7 +25,7 @@ const AddType: React.FC = () => {
     try {
       const response = await fetch("http://localhost:3000/type");
       const data = await response.json();
-      setType(data);
+      setTypes(data);
     } catch (error) {
       console.error("Error fetching types:", error);
     }
@@ -38,11 +38,11 @@ const AddType: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newTypes),
+        body: JSON.stringify(newType),
       });
-      fetchTypes(); // Actualizar la lista de categorías después de agregar una nueva
+      fetchTypes();
       resetForm();
-      console.log("Types created successfully");
+      console.log("Type created successfully");
     } catch (error) {
       console.error("Error creating type:", error);
     }
@@ -53,13 +53,13 @@ const AddType: React.FC = () => {
       await fetch(`http://localhost:3000/type/${typeId}`, {
         method: "DELETE",
       });
-      fetchTypes(); // Actualizar la lista de categorías después de eliminar una
+      fetchTypes();
     } catch (error) {
       console.error("Error deleting type:", error);
     }
   };
 
-  const updatetype = async (typeId: string, updatedType: Type) => {
+  const updateType = async (typeId: string, updatedType: Type) => {
     try {
       await fetch(`http://localhost:3000/type/${typeId}`, {
         method: "PATCH",
@@ -68,14 +68,14 @@ const AddType: React.FC = () => {
         },
         body: JSON.stringify(updatedType),
       });
-      fetchTypes(); // Actualizar la lista de categorías después de actualizar una
+      fetchTypes();
     } catch (error) {
       console.error("Error updating type:", error);
     }
   };
 
   const resetForm = () => {
-    setNewTypes({
+    setNewType({
       id: "",
       name: "",
       slug: "",
@@ -83,54 +83,105 @@ const AddType: React.FC = () => {
   };
 
   const handleEditClick = (typeId: string) => {
-    // Implementa la lógica para editar una categoría
-    console.log(`Edit type with ID: ${typeId}`);
+    setEditMode(true);
+    setEditTypeId(typeId);
+    const selectedType = types.find((type) => type.id === typeId);
+    if (selectedType) {
+      setNewType(selectedType);
+    }
+  };
+
+  const handleSaveClick = () => {
+    if (editTypeId) {
+      updateType(editTypeId, newType);
+      setEditMode(false);
+      setEditTypeId("");
+      resetForm();
+    }
+  };
+
+  const exitEditMode = () => {
+    setEditMode(false);
+    setEditTypeId("");
+    resetForm();
   };
 
   return (
     <div>
-      <h1>Categorías</h1>
-      <div>
-        <div>
-          <label htmlFor="typeName">Nombre:</label>
-          <input
-            type="text"
-            id="typeName"
-            value={newTypes.name}
-            onChange={(e) => setNewTypes({ ...newTypes, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label htmlFor="typeSlug">Slug:</label>
-          <input
-            type="text"
-            id="typeSlug"
-            value={newTypes.slug}
-            onChange={(e) => setNewTypes({ ...newTypes, slug: e.target.value })}
-          />
-        </div>
-        <div>
-          <button onClick={createType}>Crear Categoría</button>
+      <h1>Agregar Tipos</h1>
+      <div className="inputs">
+        <div className="add">
+          <section>
+            <div className="inp">
+              <label htmlFor="typeName">Nombre:</label>
+              <input
+                type="text"
+                id="typeName"
+                value={newType.name}
+                onChange={(e) =>
+                  setNewType({ ...newType, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="inp">
+              <label htmlFor="typeSlug">Slug:</label>
+              <input
+                type="text"
+                id="typeSlug"
+                value={newType.slug}
+                onChange={(e) =>
+                  setNewType({ ...newType, slug: e.target.value })
+                }
+              />
+            </div>
+          </section>
+          <div>
+            {editMode ? (
+              <>
+                <button className="BtnAdd" onClick={handleSaveClick}>
+                  Guardar
+                </button>
+                <button className="btnEdit" onClick={exitEditMode}>
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <div className="btnflex">
+                <button className="BtnAdd" onClick={createType}>
+                  Crear Tipo
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+      <h1>Tipos</h1>
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Slug</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {type.map((type) => (
+          {types.map((type) => (
             <tr key={type.id}>
-              <td>{type.id}</td>
               <td>{type.name}</td>
               <td>{type.slug}</td>
               <td>
-                <button onClick={() => handleEditClick(type.id)}>Editar</button>
-                <button onClick={() => deleteType(type.id)}>Eliminar</button>
+                <button
+                  className="btnDeleted"
+                  onClick={() => deleteType(type.id)}
+                >
+                  Eliminar
+                </button>
+                <button
+                  className="btnEdit"
+                  onClick={() => handleEditClick(type.id)}
+                >
+                  Editar
+                </button>
               </td>
             </tr>
           ))}

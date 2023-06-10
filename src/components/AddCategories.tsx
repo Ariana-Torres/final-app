@@ -14,8 +14,10 @@ const AddCategories: React.FC = () => {
     slug: "",
   });
 
+  const [editMode, setEditMode] = useState(false);
+  const [editCategoryId, setEditCategoryId] = useState("");
+
   useEffect(() => {
-    // Cargar las categorías al cargar el componente
     fetchCategories();
   }, []);
 
@@ -38,7 +40,7 @@ const AddCategories: React.FC = () => {
         },
         body: JSON.stringify(newCategory),
       });
-      fetchCategories(); // Actualizar la lista de categorías después de agregar una nueva
+      fetchCategories();
       resetForm();
       console.log("Category created successfully");
     } catch (error) {
@@ -51,7 +53,7 @@ const AddCategories: React.FC = () => {
       await fetch(`http://localhost:3000/categories/${categoryId}`, {
         method: "DELETE",
       });
-      fetchCategories(); // Actualizar la lista de categorías después de eliminar una
+      fetchCategories();
     } catch (error) {
       console.error("Error deleting category:", error);
     }
@@ -69,7 +71,7 @@ const AddCategories: React.FC = () => {
         },
         body: JSON.stringify(updatedCategory),
       });
-      fetchCategories(); // Actualizar la lista de categorías después de actualizar una
+      fetchCategories();
     } catch (error) {
       console.error("Error updating category:", error);
     }
@@ -84,64 +86,108 @@ const AddCategories: React.FC = () => {
   };
 
   const handleEditClick = (categoryId: string) => {
-    console.log(`Edit category with ID: ${categoryId}`);
+    setEditMode(true);
+    setEditCategoryId(categoryId);
+    const selectedCategory = categories.find(
+      (category) => category.id === categoryId
+    );
+    if (selectedCategory) {
+      setNewCategory(selectedCategory);
+    }
+  };
+
+  const handleSaveClick = () => {
+    if (editCategoryId) {
+      updateCategory(editCategoryId, newCategory);
+      setEditMode(false);
+      setEditCategoryId("");
+      resetForm();
+    }
+  };
+
+  const exitEditMode = () => {
+    setEditMode(false);
+    setEditCategoryId("");
+    resetForm();
   };
 
   return (
-    <div>
-      <h1>Categorías</h1>
-      <div>
-        <div>
-          <label htmlFor="categoryName">Nombre:</label>
-          <input
-            type="text"
-            id="categoryName"
-            value={newCategory.name}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, name: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label htmlFor="categorySlug">Slug:</label>
-          <input
-            type="text"
-            id="categorySlug"
-            value={newCategory.slug}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, slug: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <button onClick={createCategory}>Crear Categoría</button>
-        </div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Slug</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((category) => (
-            <tr key={category.id}>
-              <td>{category.name}</td>
-              <td>{category.slug}</td>
-              <td>
-                <button onClick={() => handleEditClick(category.id)}>
-                  Editar
+    <div className="componets">
+      <h1>Agregar Categorías</h1>
+      <div className="inputs">
+        <div className="add">
+          <section>
+            <div className="inp">
+              <label htmlFor="categoryName">Nombre:</label>
+              <input
+                type="text"
+                id="categoryName"
+                value={newCategory.name}
+                onChange={(e) =>
+                  setNewCategory({ ...newCategory, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="inp">
+              <label htmlFor="categorySlug">Slug:</label>
+              <input
+                type="text"
+                id="categorySlug"
+                value={newCategory.slug}
+                onChange={(e) =>
+                  setNewCategory({ ...newCategory, slug: e.target.value })
+                }
+              />
+            </div>
+          </section>
+          <div>
+            {editMode ? (
+              <>
+                <button onClick={handleSaveClick}>Guardar</button>
+                <button onClick={exitEditMode}>Cancelar</button>
+              </>
+            ) : (
+              <div className="btnflex">
+                <button className="BtnAdd" onClick={createCategory}>
+                  Crear Categoría
                 </button>
-                <button onClick={() => deleteCategory(category.id)}>
-                  Eliminar
-                </button>
-              </td>
+              </div>
+            )}
+          </div>
+        </div>
+        <h1>Categorias</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Slug</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td>{category.name}</td>
+                <td>{category.slug}</td>
+                <td>
+                  <button
+                    className="btnDeleted"
+                    onClick={() => deleteCategory(category.id)}
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    className="btnEdit"
+                    onClick={() => handleEditClick(category.id)}
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

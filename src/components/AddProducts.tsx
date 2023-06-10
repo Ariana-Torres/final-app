@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // importamos las hooks de estados
 
 import "./css/Products.css";
 import * as uuid from "uuid";
@@ -33,6 +33,8 @@ const AddProducts: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [types, setTypes] = useState<Type[]>([]);
 
+  const [editMode, setEditMode] = useState(false);
+  const [editProductsId, setEditProductsId] = useState("");
   useEffect(() => {
     // Cargar los productos al cargar el componente
     fetchProducts();
@@ -52,7 +54,7 @@ const AddProducts: React.FC = () => {
       // Actualizar el estado de las categorías con los datos recibidos
       setCategories(categoriesData);
 
-      const typesResponse = await fetch("http://localhost:3000/types");
+      const typesResponse = await fetch("http://localhost:3000/type");
       const typesData = await typesResponse.json();
       // Actualizar el estado de los tipos con los datos recibidos
       setTypes(typesData);
@@ -62,33 +64,53 @@ const AddProducts: React.FC = () => {
   };
   const addProduct = async () => {
     try {
-      const newProductId = uuid.v4();
+      const newProductId = uuid.v4(); // Generar un ID único
       const newProductWithId = { ...newProduct, id: newProductId };
-      // Enviar las categorías y tipos seleccionados en el cuerpo de la solicitud
-      const newProductData = {
-        ...newProductWithId,
-        categories: newProduct.categories.map((categoryId) => ({
-          id: categoryId,
-        })),
-        types: newProduct.types.map((typeId) => ({
-          id: typeId,
-        })),
-      };
 
       await fetch("http://localhost:3000/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newProductData),
+        body: JSON.stringify(newProductWithId),
       });
 
-      fetchProducts();
+      fetchProducts(); // Actualizar la lista de productos después de agregar uno nuevo
       resetForm();
     } catch (error) {
       console.error("Error adding product:", error);
     }
   };
+
+  // const addProduct = async () => {
+  //   try {
+  //     const newProductId = uuid.v4();
+  //     const newProductWithId = { ...newProduct, id: newProductId };
+  //     // Enviar las categorías y tipos seleccionados en el cuerpo de la solicitud
+  //     const newProductData = {
+  //       ...newProductWithId,
+  //       categories: newProduct.categories.map((categoryId) => ({
+  //         id: categoryId,
+  //       })),
+  //       types: newProduct.types.map((typeId) => ({
+  //         id: typeId,
+  //       })),
+  //     };
+
+  //     await fetch("http://localhost:3000/products", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(newProductData),
+  //     });
+
+  //     fetchProducts();
+  //     resetForm();
+  //   } catch (error) {
+  //     console.error("Error adding product:", error);
+  //   }
+  // };
 
   const deleteProduct = async (productId: string) => {
     try {
@@ -126,6 +148,31 @@ const AddProducts: React.FC = () => {
       types: [],
     });
   };
+  const handleEditClick = (prodctsId: string) => {
+    setEditMode(true);
+    setEditProductsId(prodctsId);
+    const selectedProducts = products.find(
+      (products) => products.id === prodctsId
+    );
+    if (selectedProducts) {
+      setNewProduct(selectedProducts);
+    }
+  };
+
+  const handleSaveClick = () => {
+    if (editProductsId) {
+      updateProduct(editProductsId, newProduct);
+      setEditMode(false);
+      setEditProductsId("");
+      resetForm();
+    }
+  };
+
+  const exitEditMode = () => {
+    setEditMode(false);
+    setEditProductsId("");
+    resetForm();
+  };
 
   const handleCategoryChange = (selectedCategories: string[]) => {
     setNewProduct({ ...newProduct, categories: selectedCategories });
@@ -136,83 +183,114 @@ const AddProducts: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="componets">
       <h1>Agregar Productos</h1>
-      <div>
-        <div>
-          <label htmlFor="productName">Nombre:</label>
-          <input
-            type="text"
-            id="productName"
-            value={newProduct.name}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, name: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label htmlFor="productDescription">Descripción:</label>
-          <input
-            type="text"
-            id="productDescription"
-            value={newProduct.description}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, description: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label htmlFor="productPrice">Precio:</label>
-          <input
-            type="number"
-            id="productPrice"
-            value={newProduct.price}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, price: parseInt(e.target.value) })
-            }
-          />
-        </div>
-        <div>
-          <label htmlFor="productCategories">Categorías:</label>
-          <select
-            id="productCategories"
-            multiple
-            value={newProduct.categories}
-            onChange={(e) =>
-              handleCategoryChange(
-                Array.from(e.target.selectedOptions, (option) => option.value)
-              )
-            }
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* <div>
-          <label htmlFor="productTypes">Tipos:</label>
-          <select
-            id="productTypes"
-            multiple
-            value={newProduct.types}
-            onChange={(e) =>
-              handleTypeChange(
-                Array.from(e.target.selectedOptions, (option) => option.value)
-              )
-            }
-          >
-            {types.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-        </div> */}
+      <div className="inputs">
+        <div className="add">
+          <section>
+            <div className="inp">
+              <label htmlFor="productName">Nombre:</label>
+              <input
+                type="text"
+                id="productName"
+                value={newProduct.name}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="inp">
+              <label htmlFor="productDescription">Descripción:</label>
+              <input
+                type="text"
+                id="productDescription"
+                value={newProduct.description}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, description: e.target.value })
+                }
+              />
+            </div>
 
-        <div>
-          <button onClick={addProduct}>Agregar Producto</button>
+            <div className="inp">
+              <label htmlFor="productPrice">Precio:</label>
+              <input
+                type="number"
+                id="productPrice"
+                value={newProduct.price}
+                onChange={
+                  (e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      price: parseInt(e.target.value),
+                    }) //convertimos el tipo de dato
+                }
+              />
+            </div>
+          </section>
+          <section>
+            <div>
+              <label htmlFor="productCategories">Categorías:</label>
+              <select
+                id="productCategories"
+                multiple
+                value={newProduct.categories}
+                onChange={(e) =>
+                  handleCategoryChange(
+                    Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    )
+                  )
+                }
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="productTypes">Tipos:</label>
+              <select
+                id="productTypes"
+                multiple
+                value={newProduct.types}
+                onChange={(e) =>
+                  handleTypeChange(
+                    Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    )
+                  )
+                }
+              >
+                {types.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </section>
+          <div>
+            {editMode ? (
+              <>
+                <button className="BtnAdd" onClick={handleSaveClick}>
+                  Guardar
+                </button>
+                <button className="btnEdit" onClick={exitEditMode}>
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <div className="btnflex">
+                <button className="BtnAdd" onClick={addProduct}>
+                  Agregar Producto
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <h1>Productos</h1>
         <table>
@@ -232,11 +310,20 @@ const AddProducts: React.FC = () => {
                 <td>{product.name}</td>
                 <td>{product.description}</td>
                 <td>{product.price}</td>
-                <td>{product.categories.join(", ")}</td>
-                <td>{product.types.join(", ")}</td>
+                <td>{product.categories.join("")}</td>
+                <td>{product.types.join("")}</td>
                 <td>
-                  <button onClick={() => deleteProduct(product.id)}>
+                  <button
+                    className="btnDeleted"
+                    onClick={() => deleteProduct(product.id)}
+                  >
                     Eliminar
+                  </button>
+                  <button
+                    className="btnEdit"
+                    onClick={() => handleEditClick(product.id)}
+                  >
+                    Editar
                   </button>
                 </td>
               </tr>

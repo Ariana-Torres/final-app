@@ -1,33 +1,49 @@
-/* App.css */
-
-h1 {
-  text-align: center;
-  color: blue;
-  font-size: 24px;
-  margin-bottom: 20px;
+body {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  margin: 0%;
+}
+.admin-panel {
+  display: flex;
 }
 
-nav {
-  background-color: #f0f0f0;
-  padding: 10px;
-}
-
-ul {
+.admin-panel nav ul {
+  margin-top: -10px;
+  box-shadow: 2px 0px 5px #33333348;
+  border-radius: 10px;
+  margin-right: 50px;
+  display: flex;
+  flex-direction: column;
   list-style-type: none;
-  padding: 0;
-  margin: 0;
 }
 
-li {
-  display: inline-block;
+.admin-panel nav ul li {
+  margin-top: 10%;
   margin-right: 10px;
+  margin-bottom: 20%;
+  display: inline-block;
 }
-
-a {
+.admin-panel nav ul li p {
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: #ff5b33;
+  color: rgb(255, 255, 255);
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+}
+.admin-panel nav ul li a {
   text-decoration: none;
-  color: black;
+  color: #333;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 3px;
+  transition: 0.4s;
 }
 
-a:hover {
-  color: blue;
+.admin-panel nav ul li a:hover {
+  color: #ffffff;
+  box-shadow: 1px 1px 5px #797979;
+  font-weight: 500;
+  background-color: #ff5b33;
 }

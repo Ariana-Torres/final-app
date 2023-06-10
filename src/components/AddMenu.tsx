@@ -12,6 +12,9 @@ const AddMenu: React.FC = () => {
     name: "",
   });
 
+  const [editMode, setEditMode] = useState(false); // Nuevo estado para controlar el modo de edición
+  const [editMenuId, setEditMenuId] = useState(""); // Nuevo estado para almacenar el ID del menú en edición
+
   useEffect(() => {
     fetchMenu();
   }, []);
@@ -35,9 +38,9 @@ const AddMenu: React.FC = () => {
         },
         body: JSON.stringify(newMenu),
       });
-      fetchMenu(); // Actualizar la lista de categorías después de agregar una nueva
+      fetchMenu();
       resetForm();
-      console.log("Types menu successfully");
+      console.log("Menu created successfully");
     } catch (error) {
       console.error("Error creating menu:", error);
     }
@@ -48,24 +51,26 @@ const AddMenu: React.FC = () => {
       await fetch(`http://localhost:3000/menu/${menuId}`, {
         method: "DELETE",
       });
-      fetchMenu(); // Actualizar la lista de categorías después de eliminar una
+      fetchMenu();
     } catch (error) {
-      console.error("Error menu type:", error);
+      console.error("Error deleting menu:", error);
     }
   };
 
-  const updateMenu = async (menuId: string, updateMenu: Menu) => {
+  const updateMenu = async (menuId: string, updatedMenu: Menu) => {
     try {
-      await fetch(`http://localhost:3000/type/${menuId}`, {
+      await fetch(`http://localhost:3000/menu/${menuId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updateMenu),
+        body: JSON.stringify(updatedMenu),
       });
-      fetchMenu(); // Actualizar la lista de categorías después de actualizar una
+      fetchMenu();
+      exitEditMode(); // Salir del modo de edición después de actualizar el menú
+      console.log("Menu updated successfully");
     } catch (error) {
-      console.error("Error updating type:", error);
+      console.error("Error updating menu:", error);
     }
   };
 
@@ -76,9 +81,34 @@ const AddMenu: React.FC = () => {
     });
   };
 
+  const enterEditMode = (menuId: string) => {
+    const selectedMenu = menu.find((m) => m.id === menuId);
+    if (selectedMenu) {
+      setNewMenu(selectedMenu);
+      setEditMode(true);
+      setEditMenuId(menuId);
+    }
+  };
+
+  const exitEditMode = () => {
+    setNewMenu({
+      id: "",
+      name: "",
+    });
+    setEditMode(false);
+    setEditMenuId("");
+  };
+
   const handleEditClick = (menuId: string) => {
-    // Implementa la lógica para editar una menu
-    console.log(`Edit type with ID: ${menuId}`);
+    enterEditMode(menuId);
+  };
+
+  const handleSaveClick = () => {
+    if (editMenuId !== "") {
+      updateMenu(editMenuId, newMenu);
+    } else {
+      createMenu();
+    }
   };
 
   return (
@@ -95,7 +125,22 @@ const AddMenu: React.FC = () => {
           />
         </div>
         <div>
-          <button onClick={createMenu}>Crear Menu</button>
+          {editMode ? (
+            <>
+              <button className="BtnAdd" onClick={handleSaveClick}>
+                Guardar
+              </button>
+              <button className="BtnEdit" onClick={exitEditMode}>
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <div className="btnflex">
+              <button className="BtnAdd" onClick={createMenu}>
+                Crear Menú
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <table>
@@ -110,8 +155,18 @@ const AddMenu: React.FC = () => {
             <tr key={menu.id}>
               <td>{menu.name}</td>
               <td>
-                <button onClick={() => handleEditClick(menu.id)}>Editar</button>
-                <button onClick={() => deleteMenu(menu.id)}>Eliminar</button>
+                <button
+                  className="btnDeleted"
+                  onClick={() => deleteMenu(menu.id)}
+                >
+                  Eliminar
+                </button>
+                <button
+                  className="btnEdit"
+                  onClick={() => handleEditClick(menu.id)}
+                >
+                  Editar
+                </button>
               </td>
             </tr>
           ))}
